@@ -61,26 +61,13 @@
             background-color: #45a049;
         }
     </style>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-    <!-- jsPDF for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <!-- Password protection script -->
     <script>
-        // SET YOUR PASSWORD HERE (change before deploying!)
-        const ADMIN_PASSWORD = "admin123"; // Replace with a strong password
-        let authenticated = false;
-
-        // Prompt for password
-        const enteredPassword = prompt("Enter Admin Password:");
-        if (enteredPassword !== ADMIN_PASSWORD) {
-            alert("Access Denied: Incorrect Password");
-            window.location.href = "/"; // Redirect to home
+        // Check authentication
+        if (sessionStorage.getItem("authenticated") !== "true") {
+            window.location.href = "login.html"; // Redirect if not logged in
         } else {
-            authenticated = true;
             document.write(`
                 <div>
                     <h1>User Submissions</h1>
@@ -106,8 +93,8 @@
         }
 
         function logout() {
-            authenticated = false;
-            window.location.reload(); // Forces password re-entry
+            sessionStorage.removeItem("authenticated");
+            window.location.href = "login.html";
         }
     </script>
 
@@ -207,5 +194,6 @@
             window.onload = loadSubmissions;
         }
     </script>
+
 </body>
 </html>
