@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Information Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>User Information</h1>
+    <form id="userForm">
+        <div class="form-group">
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="birthdate">Birth Date:</label>
+            <input type="date" id="birthdate" name="birthdate" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="address">Living Address:</label>
+            <textarea id="address" name="address" rows="4" required></textarea>
+        </div>
+        
+        <button type="submit" id="submitBtn">Submit</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        // Make jsPDF available globally
+        window.jsPDF = window.jspdf.jsPDF;
+
+        // Your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAjMn3H2FKy87-m6VDq9AuPKt5CqMBy8K4",
+            authDomain: "lpkkp-ed2c7.firebaseapp.com",
+            projectId: "lpkkp-ed2c7",
+            storageBucket: "lpkkp-ed2c7.firebasestorage.app",
+            messagingSenderId: "627472582025",
+            appId: "1:627472582025:web:f9c96d7f5c02437e4d8d58",
+            measurementId: "G-6WM3EKJGMV"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        document.getElementById('userForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+            const birthdate = document.getElementById('birthdate').value;
+            const address = document.getElementById('address').value;
+
+            // Save to Firebase
+            db.collection("users").add({
+                name: name,
+                age: age,
+                birthdate: birthdate,
+                address: address,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                // Generate enhanced PDF
+                const doc = new jsPDF();
+                
+                // PDF Styling
+                doc.setFontSize(18);
+                doc.setTextColor(40, 40, 40);
+                doc.text("User Information", 105, 20, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.text(`Name: ${name}`, 20, 40);
+                doc.text(`Age: ${age}`, 20, 50);
+                doc.text(`Birth Date: ${birthdate}`, 20, 60);
+                
+                // Handle multi-line address
+                const splitAddress = doc.splitTextToSize(address, 170);
+                doc.text("Address:", 20, 70);
+                doc.text(splitAddress, 20, 80);
+                
+                doc.save('user_information.pdf');
+                
+                // Show success message
+                document.getElementById('result').innerHTML = `
+                    <p style="color: green; margin-top: 15px;">
+                        ✓ Data saved and PDF generated successfully!
+                    </p>
+                `;
+            })
+            .catch((error) => {
+                document.getElementById('result').innerHTML = `
+                    <p style="color: red; margin-top: 15px;">
+                        Error: ${error.message}
+                    </p>
+                `;
+            })
+            .finally(() => {
+                btn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
